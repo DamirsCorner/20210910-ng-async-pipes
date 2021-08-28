@@ -3,6 +3,7 @@ import { TranslateService } from '@ngx-translate/core';
 
 @Pipe({
   name: 'formatBool',
+  pure: false,
 })
 export class FormatBoolPipe implements PipeTransform {
   constructor(private readonly translate: TranslateService) {}
