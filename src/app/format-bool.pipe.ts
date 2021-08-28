@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
 @Pipe({
@@ -6,10 +6,29 @@ import { TranslateService } from '@ngx-translate/core';
   pure: false,
 })
 export class FormatBoolPipe implements PipeTransform {
-  constructor(private readonly translate: TranslateService) {}
+  private lastValue: boolean | undefined;
+  private formattedValue: string | undefined;
 
-  transform(value: boolean): Promise<string> {
+  constructor(
+    private readonly translate: TranslateService,
+    private readonly ref: ChangeDetectorRef
+  ) {}
+
+  transform(value: boolean): string | undefined {
+    if (value === this.lastValue) {
+      return this.formattedValue;
+    }
+
     const translationKey = value ? 'BOOLEAN.TRUE' : 'BOOLEAN.FALSE';
-    return this.translate.get(translationKey).toPromise();
+    this.translate
+      .get(translationKey)
+      .toPromise()
+      .then((formattedValue) => {
+        this.formattedValue = formattedValue;
+        this.lastValue = value;
+        this.ref.markForCheck();
+      });
+
+    return this.formattedValue;
   }
 }
